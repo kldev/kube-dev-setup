@@ -134,6 +134,11 @@ kubectl taint nodes --all node-role.kubernetes.io/master-
 
 ## worker 1 and worker 2 setup (join cluster)
 
+- on each node run join command (result of **kubeadm token create --print-join-command**)
+```
+kubeadm join k8s.local.lab.pl:6443 --token j1tl0p.3abgsxddc2rfv2dk \
+--discovery-token-ca-cert-hash sha256:a57353be3f09fcca49c1cfca7fe39d14778912da56ff2741f44bc72f4456d006
+```
 
 ### Workstation steps
 
@@ -146,16 +151,63 @@ ssh-copy-id -i ~/.ssh/id_lab.pub worker2.local.lab.pl
 - setup ~/.ssh/config
 
 ```
+Host master.local.lab.pl
+   HostName 192.168.5.180
+   User xd
+   IdentityFile ~/.ssh/id_rsa_lab.pub
+   Port 22
+   
+Host worker1.local.lab.pl
+   HostName 192.168.5.185
+   User xd
+   IdentityFile ~/.ssh/id_rsa_lab.pub
+   Port 22
+   
+Host worker2.local.lab.pl
+   HostName 192.168.5.186
+   User xd
+   IdentityFile ~/.ssh/id_rsa_lab.pub
+   Port 22   
 ```
 
 
+### optional stepe (INGRES)
+- i did use helm method
+```
+helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
+helm repo update
+```
+- prepeare values.yml file
+``` 
+controller:
+  hostNetwork: true
+  service:
+    type: NodePort
+  nodePorts:
+    http: 33000
+    https: 33443
+controller.service.httpsPort.enable: false
+```
+```
+kubectl create namespace ingress-nginx
+kubens ingress-nginx
+helm upgrade ingress-nginx ingress-nginx/ingress-nginx -f values.yml --install
+```
 
 
+### test your cluster with command
 
+```
+kubectl cluster-info
+kubeclt get nodes
+```
 
+### on each namespace when using private registry setup docker secert
 
-
-
+```
+kubectl create secret docker-registry regcred --docker-username=<USERNAME> \
+--docker-password=<PASSWORD> --docker-email=<FAKE>@fake.mail --docker-server=docker.local.lab.pl
+```
 
 ## Links
 [https://www.oueta.com/linux/create-a-centos-8-or-rocky-linux-8-kubernetes-cluster-with-kubeadm/]
