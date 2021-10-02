@@ -171,7 +171,7 @@ Host worker2.local.lab.pl
 ```
 
 
-### optional stepe (INGRES)
+### optional step (INGRESS)
 - i did use helm method
 ```
 helm repo add ingress-nginx https://kubernetes.github.io/ingress-nginx
